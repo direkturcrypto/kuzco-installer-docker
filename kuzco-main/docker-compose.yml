@@ -1,0 +1,21 @@
+version: "3.8"
+services:
+  kuzco-worker:
+    container_name: kuzco-worker
+    build: .
+    networks:
+      - kuzco-network
+    restart: always
+    environment:
+      NODE_ENV: "production"
+      NODE_PORT: 14444
+      INFERENCE_API_URL: "https://api.vikey.ai/v1"
+      INFERENCE_API_KEY: "YOUR_API_KEY"
+      DEFAULT_MODEL: "llama-3.1-8b-instruct"
+      KUZCO_WORKER: "YOUR_WORKER_ID"
+      KUZCO_CODE: "YOUR_WORKER_CODE"
+      CACHE_DIRECTORY: "/app/cache"
+
+networks:
+  kuzco-network:
+    driver: bridge
