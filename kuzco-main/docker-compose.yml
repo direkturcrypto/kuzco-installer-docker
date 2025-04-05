@@ -1,7 +1,7 @@
 version: "3.8"
 services:
-  kuzco-worker:
-    container_name: kuzco-worker
+  kuzco-main:
+    container_name: kuzco-main
     build: .
     networks:
       - kuzco-network
