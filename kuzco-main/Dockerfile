@@ -26,4 +26,4 @@ EXPOSE 14444
 
 # Jalankan Ollama Bridge dulu, lalu tunggu sampai siap sebelum Kuzco
 CMD npm --prefix /app/ollama-server-bridging start & \
-kuzco worker start --worker $KUZCO_WORKER --code $KUZCO_CODE --cache-directory-override=/app/cache
+sleep 5; kuzco worker start --worker $KUZCO_WORKER --code $KUZCO_CODE --cache-directory-override=/app/cache
