@@ -12,7 +12,9 @@ print_usage() {
     echo "  Setup Workers:   $0 setup --count <num> --start-from-id <id>"
     echo "  Start Worker:    $0 start <id> OR $0 start <start_id>-<end_id>"
     echo "  Stop Worker:     $0 stop <id> OR $0 stop <start_id>-<end_id>"
+    echo "  Restart Worker:  $0 restart <id> OR $0 restart <start_id>-<end_id>"
     echo "  Stop All:        $0 stop-all"
+    echo "  Check Status:    $0 status <id> OR $0 status <start_id>-<end_id>"
     exit 1
 }
 
@@ -28,8 +30,7 @@ setup_workers() {
 
         echo "📁 Creating instance kuzco-worker-$ID..."
         mkdir -p "$INSTANCE_DIR"
-        cp -r "$KUZCO_TEMPLATE"/* "$INSTANCE_DIR"
-        rm -rf "$INSTANCE_DIR/.ollama"  # Pastikan folder .ollama tidak ikut tercopy
+        rsync -a --exclude='.ollama' "$KUZCO_TEMPLATE/" "$INSTANCE_DIR/"
 
         # Edit docker-compose.yml
         sed -i "s/kuzco-main/kuzco-worker-$ID/g" "$INSTANCE_DIR/docker-compose.yml"
@@ -78,17 +79,65 @@ stop_worker() {
     done
 }
 
+restart_worker() {
+    for ((ID=START_ID; ID<=END_ID; ID++)); do
+        INSTANCE_DIR="$BASE_DIR/kuzco-worker-$ID"
+        if [[ ! -d "$INSTANCE_DIR" ]]; then
+            echo "❌ Error: Instance $INSTANCE_DIR not found! Skipping..."
+            continue
+        fi
+        cd "$INSTANCE_DIR" || exit
+        echo "🔁 Restarting kuzco-worker-$ID..."
+        docker compose restart
+        echo "✅ kuzco-worker-$ID restarted!"
+        cd "$BASE_DIR" || exit
+    done
+}
+
 stop_all_workers() {
     echo "🛑 Stopping all kuzco instances..."
     for dir in kuzco-worker-*; do
         if [[ -d "$dir" ]]; then
             cd "$dir" || continue
             echo "Stopping $dir..."
-            docker-compose down
+            docker compose down
             cd "$BASE_DIR" || exit
         fi
     done
     echo "✅ All kuzco instances stopped!"
+}
+
+check_status() {
+    ONLINE=()
+    NOT_HEALTHY=()
+
+    for ((ID=START_ID; ID<=END_ID; ID++)); do
+        INSTANCE_DIR="$BASE_DIR/kuzco-worker-$ID"
+        if [[ ! -d "$INSTANCE_DIR" ]]; then
+            echo "⚠️  Instance kuzco-worker-$ID not found! Skipping..."
+            continue
+        fi
+
+        cd "$INSTANCE_DIR" || continue
+        LOG=$(docker compose logs --tail 100 2>/dev/null)
+
+        if echo "$LOG" | grep -q "Heartbeat complete"; then
+            ONLINE+=("worker $ID")
+        else
+            NOT_HEALTHY+=("worker $ID")
+        fi
+        cd "$BASE_DIR" || exit
+    done
+
+    echo -e "\n✅ Online:"
+    for worker in "${ONLINE[@]}"; do
+        echo "  - $worker"
+    done
+
+    echo -e "\n⚠️ Not Healthy:"
+    for worker in "${NOT_HEALTHY[@]}"; do
+        echo "  - $worker"
+    done
 }
 
 parse_range() {
@@ -132,8 +181,18 @@ case "$1" in
         parse_range "$2"
         stop_worker
         ;;
+    restart)
+        if [[ -z "$2" ]]; then print_usage; fi
+        parse_range "$2"
+        restart_worker
+        ;;
     stop-all)
         stop_all_workers
+        ;;
+    status)
+        if [[ -z "$2" ]]; then print_usage; fi
+        parse_range "$2"
+        check_status
         ;;
     *)
         print_usage
