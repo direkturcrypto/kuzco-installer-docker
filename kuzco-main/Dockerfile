@@ -8,10 +8,6 @@ RUN apt-get update && apt-get install -y curl nginx
 WORKDIR /app
 RUN mkdir -p /app/cache
 
-# Masuk ke Ollama Bridge dan install dependensinya
-WORKDIR /app/ollama-server-bridging
-RUN npm install
-
 # COPY config nginx
 COPY ./nginx.conf /etc/nginx/conf.d/default.conf
 
