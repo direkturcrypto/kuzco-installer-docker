@@ -58,7 +58,7 @@ start_worker() {
         fi
         cd "$INSTANCE_DIR" || exit
         echo "🚀 Starting kuzco-worker-$ID..."
-        docker compose up -d --build
+        docker-compose up -d --build
         echo "✅ kuzco-worker-$ID started!"
         cd "$BASE_DIR" || exit
     done
@@ -73,7 +73,7 @@ stop_worker() {
         fi
         cd "$INSTANCE_DIR" || exit
         echo "🛑 Stopping kuzco-worker-$ID..."
-        docker compose down
+        docker-compose down
         echo "✅ kuzco-worker-$ID stopped!"
         cd "$BASE_DIR" || exit
     done
@@ -88,7 +88,7 @@ restart_worker() {
         fi
         cd "$INSTANCE_DIR" || exit
         echo "🔁 Restarting kuzco-worker-$ID..."
-        docker compose restart
+        docker-compose restart
         echo "✅ kuzco-worker-$ID restarted!"
         cd "$BASE_DIR" || exit
     done
@@ -100,7 +100,7 @@ stop_all_workers() {
         if [[ -d "$dir" ]]; then
             cd "$dir" || continue
             echo "Stopping $dir..."
-            docker compose down
+            docker-compose down
             cd "$BASE_DIR" || exit
         fi
     done
@@ -119,7 +119,7 @@ check_status() {
         fi
 
         cd "$INSTANCE_DIR" || continue
-        LOG=$(docker compose logs --tail 100 2>/dev/null)
+        LOG=$(docker-compose logs --tail 100 2>/dev/null)
 
         if echo "$LOG" | grep -q "Heartbeat complete"; then
             ONLINE+=("worker $ID")
