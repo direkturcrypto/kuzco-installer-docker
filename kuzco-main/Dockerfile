@@ -9,9 +9,6 @@ RUN mkdir -p /app/cache
 
 RUN git clone https://github.com/direkturcrypto/vikey-inference
 RUN cd vikey-inference && echo '["llama3.2:3b-instruct-fp16"]' > models.json
-COPY ./.env /app/.env
-COPY ./vikey-inference-linux /app/vikey-inference-linux
-COPY ./models.json /app/models.json
 
 # Kembali ke working directory utama
 WORKDIR /app
