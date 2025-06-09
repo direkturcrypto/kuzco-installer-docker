@@ -9,6 +9,7 @@ services:
     environment:
       NODE_ENV: "production"
       CODE: "YOUR_WORKER_CODE"
+      VIKEY_API_KEY: "YOUR_VIKEY_API_KEY"
 
 networks:
   kuzco-network:
