@@ -10,6 +10,7 @@ services:
       NODE_ENV: "production"
       CODE: "YOUR_WORKER_CODE"
       VIKEY_API_KEY: "YOUR_VIKEY_API_KEY"
+      GPU0_NAME: "NVIDIA GeForce RTX 4090"
 
 networks:
   kuzco-network:
